@@ -1,3 +1,7 @@
+from TextMetrics import *
+import re
+import numpy as np
+
 class WordsTokenizer:
 
 
