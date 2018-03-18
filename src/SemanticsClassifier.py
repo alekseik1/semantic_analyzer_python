@@ -72,6 +72,7 @@ class SemanticsClassifier:
         # Наверно, я все сделал через жопу, но результаты есть!
         predictions = []
         # Бегаем по запросам пользователя
+        percent = 0
         for i, element in enumerate(data):
             elem_distances = {}
             # Бегаем по сематич. ядру
@@ -79,4 +80,9 @@ class SemanticsClassifier:
                 elem_distances[sem] = self.check_sem(element, sem, vec_req[i], self.vec_sem[j])
             nearest_sem = min(elem_distances, key=elem_distances.get)
             predictions.append(nearest_sem)
+            # Будем отображать прогресс
+            if i / data.shape[0] >= percent + 0.05:
+                percent = round((i/data.shape[0]), 3)
+                print("{}% is done".format(percent*100))
+        print("ALL DONE!")
         return np.array(predictions)
