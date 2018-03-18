@@ -34,3 +34,8 @@ def tanimoto(s1, s2):
             c += 1
 
     return c / (a + b - c)
+
+morph = pymorphy2.MorphAnalyzer()
+def normed_word(x):
+    p = morph.parse(x)[0]
+    return p.normal_form
