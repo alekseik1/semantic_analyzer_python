@@ -1,5 +1,6 @@
 import pymorphy2
 
+
  # Левенштейн
 def damerau_levenshtein_distance(s1, s2):
     d = {}
@@ -24,11 +25,19 @@ def damerau_levenshtein_distance(s1, s2):
                 d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
     return d[lenstr1 - 1, lenstr2 - 1]
 
+
 # Нормированный Левенштейн
 def norm_lev(s1, s2):
     return damerau_levenshtein_distance(s1, s2)/max(len(s1), len(s2))
 
+
 def tanimoto(s1, s2):
+    """
+    Метрика Танимото. Не очень хорошая
+    @param s1: Строка 1
+    @param s2: Строка 2
+    @return: Расстоние по этой метрике
+    """
     a, b, c = len(s1.split()), len(s2.split()), 0.0
 
     for sym in s1.split():
@@ -36,6 +45,7 @@ def tanimoto(s1, s2):
             c += 1
 
     return c / (a + b - c)
+
 
 morph = pymorphy2.MorphAnalyzer()
 def normed_word(x):
