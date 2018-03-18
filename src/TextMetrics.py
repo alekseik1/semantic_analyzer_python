@@ -26,9 +26,6 @@ def damerau_levenshtein_distance(s1, s2):
 def norm_lev(s1, s2):
     return damerau_levenshtein_distance(s1, s2)/max(len(s1), len(s2))
 
-# Косинусное расстояние
-from scipy.spatial.distance import cosine
-
 def tanimoto(s1, s2):
     a, b, c = len(s1.split()), len(s2.split()), 0.0
 
