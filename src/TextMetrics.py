@@ -1,3 +1,5 @@
+import pymorphy2
+
  # Левенштейн
 def damerau_levenshtein_distance(s1, s2):
     d = {}
