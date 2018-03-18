@@ -50,7 +50,7 @@ class WordsTokenizer:
 
                 is_found = False
                 for j, word in enumerate(self.uniq_words):
-                    if norm_lev(word, word_in_sentence) < self.p:
+                    if norm_lev(word, word_in_sentence) < self._p:
                         _cos_matrix[i][j] += 1
                         is_found = True
                         break
