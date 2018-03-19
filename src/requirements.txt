@@ -1,0 +1,6 @@
+pandas
+scipy
+numpy
+joblib
+pymorphy2
+leven
