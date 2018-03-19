@@ -10,7 +10,7 @@ class WordsTokenizer:
     Class for tokenizing words with handling special characters (e.g. '-', '+')
     """
 
-    def __init__(self, p=0.1):
+    def __init__(self, p=0.1, n_jobs=multiprocessing.cpu_count()):
         """
         Create tokenizer object
         @param p: Threshold in transform() method's levenstein distance. Should be about 0.05-0.25
@@ -18,6 +18,7 @@ class WordsTokenizer:
         self._cos_matrix = None
         self.uniq_words = set()
         self._p = p
+        self.n_jobs = n_jobs
 
     def _get_words(self, sentence):
         _uniq_words = set()
@@ -33,8 +34,7 @@ class WordsTokenizer:
         @return: Nothing
         """
         self.uniq_words = set()
-        num_cores = multiprocessing.cpu_count()
-        results = Parallel(n_jobs=num_cores)(delayed(self._get_words)(sentence) for sentence in data)
+        results = Parallel(n_jobs=self.n_jobs)(delayed(self._get_words)(sentence) for sentence in data)
         for s in results:
             self.uniq_words = self.uniq_words.union(s)
         self.uniq_words = list(self.uniq_words)

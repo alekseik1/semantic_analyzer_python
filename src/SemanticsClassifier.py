@@ -50,7 +50,7 @@ class SemanticsClassifier:
             s2 = ' '.join(sorted(sem.split(' ')))
             return self.a * cosine(vec_req, vec_sem) + self.b * norm_lev(s1, s2)
 
-    def __init__(self, a=0.7, tokenizer=WordsTokenizer()):
+    def __init__(self, a=0.7, tokenizer=WordsTokenizer(), n_jobs=multiprocessing.cpu_count()):
         """
         Classifier for requests <--> semantic kernel
         @param a: Weight for cosine distance
@@ -58,6 +58,7 @@ class SemanticsClassifier:
         self.a = a
         self.b = 1-a
         self.tokenizer = tokenizer
+        self.n_jobs = n_jobs
 
     def train(self, data):
         """
@@ -89,7 +90,7 @@ class SemanticsClassifier:
             # Бегаем по сематич. ядру
             num_cores = multiprocessing.cpu_count()
             elem_distances = dict(zip(self.sem,
-                                      Parallel(n_jobs=num_cores)(delayed(self._check)(element, vec_req, i, sem, j)
+                                      Parallel(n_jobs=self.n_jobs)(delayed(self._check)(element, vec_req, i, sem, j)
                                                                  for j, sem in enumerate(self.sem))))
             nearest_sem = min(elem_distances, key=elem_distances.get)
             predictions.append(nearest_sem)
