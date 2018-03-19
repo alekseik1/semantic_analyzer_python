@@ -59,6 +59,12 @@ class SemanticsClassifier:
         self.b = 1-a
         self.tokenizer = tokenizer
         self.n_jobs = n_jobs
+        self.sem = None
+        self.vec_sem = None
+        self.n_sem = None
+
+    def _normalize_semantics(self, sem):
+        return ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
 
     def train(self, data):
         """
@@ -66,11 +72,16 @@ class SemanticsClassifier:
         @param data: data to train at
         @return: nothing
         """
-        self.vec_sem = self.tokenizer.fit_transform(data, data)
+        if len(self.tokenizer.uniq_words) == 0:
+            self.vec_sem = self.tokenizer.fit_transform(data, data)
+        else:
+            self.vec_sem = self.tokenizer.transform(data)
         self.sem = data
+        self.n_sem = Parallel(n_jobs=self.n_jobs)(delayed(self._normalize_semantics)(sem) for sem in data)
+        print('YA')
 
-    def _check(self, element, vec_req, i, sem, j):
-        n_sem = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
+    # ПЕРЕДАВАТЬ ЕМУ ТОЛЬКО НОРМАЛИЗОВАННУЮ СЕМАНТИКУ!!!
+    def _check(self, element, vec_req, i, n_sem, j):
         return self.check_sem(element, n_sem, vec_req[i], self.vec_sem[j])
 
     def predict(self, data):
@@ -85,13 +96,11 @@ class SemanticsClassifier:
         # Бегаем по запросам пользователя
         percent = 0
         for i, element in enumerate(data):
-            elem_distances = {}
             element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
             # Бегаем по сематич. ядру
-            num_cores = multiprocessing.cpu_count()
             elem_distances = dict(zip(self.sem,
-                                      Parallel(n_jobs=self.n_jobs)(delayed(self._check)(element, vec_req, i, sem, j)
-                                                                 for j, sem in enumerate(self.sem))))
+                                      Parallel(n_jobs=self.n_jobs)(delayed(self._check)(element, vec_req, i, n_sem, j)
+                                                                 for j, n_sem in enumerate(self.n_sem))))
             nearest_sem = min(elem_distances, key=elem_distances.get)
             predictions.append(nearest_sem)
             # Будем отображать прогресс
