@@ -1,6 +1,8 @@
 from TextMetrics import *
 import re
 import numpy as np
+import multiprocessing
+from joblib import Parallel, delayed
 
 
 class WordsTokenizer:
@@ -14,8 +16,15 @@ class WordsTokenizer:
         @param p: Threshold in transform() method's levenstein distance. Should be about 0.05-0.25
         """
         self._cos_matrix = None
-        self.uniq_words = None
+        self.uniq_words = set()
         self._p = p
+
+    def _get_words(self, sentence):
+        _uniq_words = set()
+        for word in sentence.split():
+            word = normed_word(re.sub("\W", "", word)).lower()
+            _uniq_words.add(word)
+        return _uniq_words
 
     def fit(self, data):
         """
@@ -23,14 +32,13 @@ class WordsTokenizer:
         @param data: Semantic kernel to train at
         @return: Nothing
         """
-        _uniq_words = set()
-        for sentence in data:
-            for word in sentence.split():
-                word = normed_word(re.sub("\W", "", word)).lower()
-                _uniq_words.add(word)
-        _uniq_words = list(_uniq_words)
-        self.uniq_words = _uniq_words
-        self.uniq_words += ['Unknown']
+        self.uniq_words = set()
+        num_cores = multiprocessing.cpu_count()
+        results = Parallel(n_jobs=num_cores)(delayed(self._get_words)(sentence) for sentence in data)
+        for s in results:
+            self.uniq_words = self.uniq_words.union(s)
+        self.uniq_words = list(self.uniq_words)
+        self.uniq_words.append('Unknown')
 
     def transform(self, data):
         """
