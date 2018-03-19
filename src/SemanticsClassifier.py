@@ -11,10 +11,14 @@ class SemanticsClassifier:
     """
 
     def check_sem(self, req, sem, vec_req, vec_sem):
-
-        req = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in req.split(' ')])
-        n_sem = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
-
+        """
+        Проверяет, хороша ли семантика. АХТУНГ! Надо слова нормировать (смотрите исходники ниже)
+        @param req: Фраза из запроса
+        @param sem: Фраза из семантики
+        @param vec_req: Векторизированная фраза из запроса
+        @param vec_sem: Векторизированная фраза из семантики
+        @return: Процент схожести (от 0 до 1)
+        """
         if '-' in sem:
             minus_words = []
             for part in sem.split('-'):
@@ -41,7 +45,7 @@ class SemanticsClassifier:
             # Пытаемся примерно предсказать
             # самая подгонистая часть
             s1 = ' '.join(sorted(req.split(' ')))
-            s2 = ' '.join(sorted(n_sem.split(' ')))
+            s2 = ' '.join(sorted(sem.split(' ')))
             return self.a * cosine(vec_req, vec_sem) + self.b * norm_lev(s1, s2)
 
     def __init__(self, a=0.7, tokenizer=WordsTokenizer()):
@@ -75,13 +79,15 @@ class SemanticsClassifier:
         percent = 0
         for i, element in enumerate(data):
             elem_distances = {}
+            element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
             # Бегаем по сематич. ядру
             for j, sem in enumerate(self.sem):
-                elem_distances[sem] = self.check_sem(element, sem, vec_req[i], self.vec_sem[j])
+                n_sem = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
+                elem_distances[sem] = self.check_sem(element, n_sem, vec_req[i], self.vec_sem[j])
             nearest_sem = min(elem_distances, key=elem_distances.get)
             predictions.append(nearest_sem)
             # Будем отображать прогресс
-            if i / data.shape[0] >= percent + 0.05:
+            if i / data.shape[0] >= percent + 0.01:
                 percent = round((i/data.shape[0]), 3)
                 print("{}% is done".format(percent*100))
         print("ALL DONE!")
