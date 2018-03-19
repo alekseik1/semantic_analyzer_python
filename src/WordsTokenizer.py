@@ -40,6 +40,17 @@ class WordsTokenizer:
         self.uniq_words = list(self.uniq_words)
         self.uniq_words.append('Unknown')
 
+    def _transfrom_helper(self, sentence, i):
+        for word_in_sentence in sentence.split(" "):
+            # Уберем всякие какашки из слов в запросе (вдруг кто-то решил это делать)
+            word_in_sentence = re.sub("\W", "", word_in_sentence)
+            word_in_sentence = normed_word(word_in_sentence.lower())
+
+            for j, word in enumerate(self.uniq_words):
+                if norm_lev(word, word_in_sentence) < self._p:
+                    return i, j
+            return i, -1
+
     def transform(self, data):
         """
         Encode
@@ -50,20 +61,9 @@ class WordsTokenizer:
             raise str("Надо сначала вызвать fit() !!!")
 
         _cos_matrix = np.zeros((data.shape[0], len(self.uniq_words)+1))
-        for i, sentence in enumerate(data):
-            for word_in_sentence in sentence.split(" "):
-                # Уберем всякие какашки из слов в запросе (вдруг кто-то решил это делать)
-                word_in_sentence = re.sub("\W", "", word_in_sentence)
-                word_in_sentence = normed_word(word_in_sentence.lower())
-
-                is_found = False
-                for j, word in enumerate(self.uniq_words):
-                    if norm_lev(word, word_in_sentence) < self._p:
-                        _cos_matrix[i][j] += 1
-                        is_found = True
-                        break
-                if not is_found:
-                    _cos_matrix[i][-1] += 1
+        indices = Parallel(n_jobs=self.n_jobs)(delayed(self._transfrom_helper)(sentence, i) for i, sentence in enumerate(data))
+        for index in indices:
+            _cos_matrix[index[0]][index[1]] += 1
         return _cos_matrix
 
     def fit_transform(self, train_words, data):
