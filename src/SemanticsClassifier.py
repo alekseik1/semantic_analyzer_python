@@ -3,6 +3,8 @@ from TextMetrics import normed_word, norm_lev
 import re
 from WordsTokenizer import WordsTokenizer
 import numpy as np
+from joblib import Parallel, delayed
+import multiprocessing
 
 
 class SemanticsClassifier:
@@ -66,6 +68,10 @@ class SemanticsClassifier:
         self.vec_sem = self.tokenizer.fit_transform(data, data)
         self.sem = data
 
+    def _check(self, element, vec_req, i, sem, j):
+        n_sem = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
+        return self.check_sem(element, n_sem, vec_req[i], self.vec_sem[j])
+
     def predict(self, data):
         """
         Predict semantics for array of STRING requests
@@ -81,9 +87,10 @@ class SemanticsClassifier:
             elem_distances = {}
             element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
             # Бегаем по сематич. ядру
-            for j, sem in enumerate(self.sem):
-                n_sem = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
-                elem_distances[sem] = self.check_sem(element, n_sem, vec_req[i], self.vec_sem[j])
+            num_cores = multiprocessing.cpu_count()
+            elem_distances = dict(zip(self.sem,
+                                      Parallel(n_jobs=num_cores)(delayed(self._check)(element, vec_req, i, sem, j)
+                                                                 for j, sem in enumerate(self.sem))))
             nearest_sem = min(elem_distances, key=elem_distances.get)
             predictions.append(nearest_sem)
             # Будем отображать прогресс
