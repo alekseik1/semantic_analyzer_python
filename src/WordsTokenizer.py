@@ -60,7 +60,7 @@ class WordsTokenizer:
         if self.uniq_words is None:
             raise str("Надо сначала вызвать fit() !!!")
 
-        _cos_matrix = np.zeros((data.shape[0], len(self.uniq_words)+1))
+        _cos_matrix = np.zeros((data.shape[0], len(self.uniq_words)+1), dtype=np.int)
         indices = Parallel(n_jobs=self.n_jobs)(delayed(self._transfrom_helper)(sentence, i) for i, sentence in enumerate(data))
         for index in indices:
             _cos_matrix[index[0]][index[1]] += 1
