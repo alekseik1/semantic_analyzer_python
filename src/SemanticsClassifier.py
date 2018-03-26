@@ -103,11 +103,6 @@ class SemanticsClassifier:
         @return: Semantics for each data
         """
         vec_req = self.tokenizer.transform(data)
-        # Наверно, я все сделал через жопу, но результаты есть!
-        predictions = []
-        # Бегаем по запросам пользователя
-        percent = 0
-
         predictions = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(self._make_predictions_multithread)(i, element, vec_req)
                                                    for i, element in enumerate(data))
         return np.array(predictions)
