@@ -89,21 +89,12 @@ class SemanticsClassifier:
     def _make_predictions_multithread(self, i, element, vec_req):
         element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
         # Бегаем по сематич. ядру
-        if self.verbose:
-            print("Starting to count predictions for '{}...'".format(element[:int(len(element) / 2)]))
-        #elem_distances = dict(zip(self.sem,
-        #                          Parallel(n_jobs=self.n_jobs)(
-        #                              delayed(self._check)(element, vec_req, i, n_sem, j)
-        #                              for j, n_sem in enumerate(self.n_sem))))
         elem_distances = dict(zip(self.sem, [self._check(element, vec_req, i, n_sem, j) for j, n_sem in enumerate(self.n_sem)]))
-        if self.verbose:
-            print("Counted distances! Finding minimum...")
         nearest_sem = min(elem_distances, key=elem_distances.get)
         if elem_distances[nearest_sem] < 0.3:
-            return {element: nearest_sem}
+            return nearest_sem
         else:
-            return {element: 'Unknown'}
-
+            return 'Unknown'
 
     def predict(self, data):
         """
@@ -117,10 +108,6 @@ class SemanticsClassifier:
         # Бегаем по запросам пользователя
         percent = 0
 
-        predictions_list = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(self._make_predictions_multithread)(i, element, vec_req)
+        predictions = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(self._make_predictions_multithread)(i, element, vec_req)
                                                    for i, element in enumerate(data))
-        predictions = {}
-        for i in predictions_list:
-            predictions.update(i)
-        print("ALL DONE!")
-        return predictions
+        return np.array(predictions)
