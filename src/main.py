@@ -19,20 +19,7 @@ sem_cos_matrix = tokenizer.transform(df_sem['keyword_name'])
 
 classifier = SemanticsClassifier(tokenizer=tokenizer, be_verbose=False, a=0.7)
 classifier.train(df_sem['keyword_name'].values)
-predictions = []
-for i in range(0, df_search.shape[0], 1000):
-    # Если выпираем, то
-    if 1000+i > df_search.size:
-        pred_data = df_search['search'].values[i:]
-    else:
-        pred_data = df_search['search'].values[i:1000 + i]
-
-    tmp = classifier.predict(pred_data)
-    predictions += tmp.tolist()
-    print("--------------------------")
-    print("Made from {} to {}".format(i, i+1000))
-    print("--------------------------")
-
+predictions = classifier.predict(df_search['search'].values)
 df_search['predictions'] = predictions
 print("--------------------------")
 print("Predictions are ready, writing to file...")

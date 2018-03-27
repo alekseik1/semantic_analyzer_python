@@ -103,6 +103,19 @@ class SemanticsClassifier:
         @return: Semantics for each data
         """
         vec_req = self.tokenizer.transform(data)
-        predictions = Parallel(n_jobs=self.n_jobs, verbose=10)(delayed(self._make_predictions_multithread)(i, element, vec_req)
-                                                   for i, element in enumerate(data))
+        predictions = []
+        for i in range(0, data.shape[0], 1000):
+            # Если выпираем, то
+            if 1000 + i > data.shape[0]:
+                pred_data = data[i:]
+            else:
+                pred_data = data[i:1000 + i]
+
+            tmp = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(delayed(self._make_predictions_multithread)(i, element, vec_req)
+                                                   for i, element in enumerate(pred_data))
+            predictions += tmp
+            if self.verbose:
+                print("--------------------------")
+                print("Made from {} to {}".format(i, i + 1000))
+                print("--------------------------")
         return np.array(predictions)
