@@ -15,7 +15,7 @@ class WordsTokenizer:
         Create tokenizer object
         @param p: Threshold in transform() method's levenstein distance. Should be about 0.05-0.25
         """
-        self._cos_matrix = None
+        # NOTE! uniq_words WILL contain 'Unknown'!!!
         self.uniq_words = set()
         self._p = p
         self.n_jobs = n_jobs
@@ -50,17 +50,24 @@ class WordsTokenizer:
         Main magic for transform() method, used only in class and only for multithreading purposes (don't call it directly)
         @param sentence: one sentence from transform() data
         @param i: number of sentence in data
-        @return: i, (count_of_i)
+        @return: list of tuples (i, j). cos_matrix[i][j] should be added by 1 afterwards!!
         """
+        to_return = []
         for word_in_sentence in sentence.split(" "):
             # Уберем всякие какашки из слов в запросе (вдруг кто-то решил это делать)
             word_in_sentence = re.sub("\W", "", word_in_sentence)
             word_in_sentence = normed_word(word_in_sentence.lower())
+            is_found = False
 
             for j, word in enumerate(self.uniq_words):
                 if norm_lev(word, word_in_sentence) < self._p:
-                    return i, j
-            return i, -1
+                    # В случае совпадения увеличиваем соответствующее значение в матрице слов на 1
+                    to_return.append((i, j))
+                    is_found = True
+            # Если совсем не нашли значений, то увеличиваем 'Unknown' на единицу
+            if not is_found:
+                to_return.append((i, -1))
+        return to_return
 
     def transform(self, data):
         """
@@ -68,14 +75,17 @@ class WordsTokenizer:
         @param data: Data to be vectorized
         @return: numpy n-d array with vectorized sentences in data
         """
+
         if self.uniq_words is None:
             raise str("Надо сначала вызвать fit() !!!")
 
-        _cos_matrix = np.zeros((data.shape[0], len(self.uniq_words)+1), dtype=np.int)
-        indices = Parallel(n_jobs=self.n_jobs)(delayed(self._transfrom_helper)(sentence, i) for i, sentence in enumerate(data))
-        for index in indices:
-            _cos_matrix[index[0]][index[1]] += 1
-        return _cos_matrix
+        token_matrix = np.zeros((data.shape[0], len(self.uniq_words)), dtype=np.int)
+        tmp = Parallel(n_jobs=self.n_jobs)(delayed(self._transfrom_helper)(sentence, i) for i, sentence in enumerate(data))
+        # Now, let's fill token_matrix
+        for l in tmp:
+            for pair in l:
+                token_matrix[pair[0]][pair[1]] += 1
+        return token_matrix
 
     def fit_transform(self, train_words, data):
         """
