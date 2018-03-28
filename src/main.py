@@ -17,7 +17,7 @@ tokenizer.fit(df_sem['keyword_name'].values)
 cos_matrix = tokenizer.transform(df_search['search'].values)
 sem_cos_matrix = tokenizer.transform(df_sem['keyword_name'])
 
-classifier = SemanticsClassifier(tokenizer=tokenizer, be_verbose=False, a=0.7)
+classifier = SemanticsClassifier(tokenizer=tokenizer, be_verbose=False, a=0.7, p=0.3)
 classifier.train(df_sem['keyword_name'].values)
 predictions = classifier.predict(df_search['search'].values)
 df_search['predictions'] = predictions
