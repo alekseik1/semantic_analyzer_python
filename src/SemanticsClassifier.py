@@ -90,16 +90,20 @@ class SemanticsClassifier:
         else:
             self.vec_sem = self.tokenizer.transform(data)
         self.sem = data
+        # Сохраним в поле класса еще и нормализованную семантику
         self.n_sem = Parallel(n_jobs=self.n_jobs)(delayed(self._normalize_semantics)(sem) for sem in data)
         if self.verbose:
             print("Semantics classifier is trained!")
 
     def _make_predictions_multithread(self, i, element, vec_req):
+        # Нормируем слово
         element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
         # Бегаем по сематич. ядру
         elem_distances = dict(
             zip(self.sem, [self.check_sem(element, sem, vec_req[i], self.vec_sem[j]) for j, sem in enumerate(self.sem)]))
+        # Находим ближаюшую к запросу семантику
         nearest_sem = min(elem_distances, key=elem_distances.get)
+        # Проверяем: если расстояние меньше порогового, то выдаем найденную сем-ку, иначе 'Unknown'
         if elem_distances[nearest_sem] < self.p:
             return nearest_sem
         else:
@@ -113,13 +117,14 @@ class SemanticsClassifier:
         """
         vec_req = self.tokenizer.transform(data)
         predictions = []
+        # Разделим исходные данные порциями по 1000, так лучше параллелится
         for i in range(0, data.shape[0], 1000):
             # Если выпираем, то
             if 1000 + i > data.shape[0]:
                 pred_data = data[i:]
             else:
                 pred_data = data[i:1000 + i]
-
+            # Распараллелим задачу поиска оптимальной семантики для текущего запроса
             tmp = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(delayed(self._make_predictions_multithread)(i, element, vec_req)
                                                    for i, element in enumerate(pred_data))
             predictions += tmp
