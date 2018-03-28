@@ -21,6 +21,11 @@ class WordsTokenizer:
         self.n_jobs = n_jobs
 
     def _get_words(self, sentence):
+        """
+        Gets unique words from sentence (removing the \W symbols)
+        @param sentence: Sentence
+        @return: Set of unique words
+        """
         _uniq_words = set()
         for word in sentence.split():
             word = normed_word(re.sub("\W", "", word)).lower()
@@ -41,6 +46,12 @@ class WordsTokenizer:
         self.uniq_words.append('Unknown')
 
     def _transfrom_helper(self, sentence, i):
+        """
+        Main magic for transform() method, used only in class and only for multithreading purposes (don't call it directly)
+        @param sentence: one sentence from transform() data
+        @param i: number of sentence in data
+        @return: i, (count_of_i)
+        """
         for word_in_sentence in sentence.split(" "):
             # Уберем всякие какашки из слов в запросе (вдруг кто-то решил это делать)
             word_in_sentence = re.sub("\W", "", word_in_sentence)
@@ -53,7 +64,7 @@ class WordsTokenizer:
 
     def transform(self, data):
         """
-        Encode
+        Tokenize given data. This data can contain any symbols (e.g. '+', '-') -- they will be removed
         @param data: Data to be vectorized
         @return: numpy n-d array with vectorized sentences in data
         """
