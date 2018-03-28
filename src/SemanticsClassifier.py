@@ -50,13 +50,15 @@ class SemanticsClassifier:
             s2 = ' '.join(sorted(sem.split(' ')))
             return self.a * cosine(vec_req, vec_sem) + self.b * norm_lev(s1, s2)
 
-    def __init__(self, a=0.7, tokenizer=WordsTokenizer(), n_jobs=multiprocessing.cpu_count(), be_verbose=False):
+    def __init__(self, a=0.7, tokenizer=WordsTokenizer(), n_jobs=multiprocessing.cpu_count(), be_verbose=False, p=1):
         """
         Classifier for requests <--> semantic kernel
         @param a: Weight for cosine distance
-        @param tokenizer: Pass tokenizer existing tokenizer for words, if exists. It would speed up computation
+        @param tokenizer: Pass existing tokenizer for words, if exists. It would speed up computation
         @param n_jobs: Number of threads to use in execution
         @param be_verbose: Write more output info about progress
+        @param p: Minimum threshold for predictions. If none of sentence in semantics kernel has probability more than p,
+        then requested phrase is considered as 'Unknown'
         """
         self.a = a
         self.b = 1-a
@@ -66,6 +68,7 @@ class SemanticsClassifier:
         self.vec_sem = None
         self.n_sem = None
         self.verbose = be_verbose
+        self.p = p
 
     def _normalize_semantics(self, sem):
         return ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
@@ -95,7 +98,7 @@ class SemanticsClassifier:
         # Бегаем по сематич. ядру
         elem_distances = dict(zip(self.sem, [self._check(element, vec_req, i, n_sem, j) for j, n_sem in enumerate(self.n_sem)]))
         nearest_sem = min(elem_distances, key=elem_distances.get)
-        if elem_distances[nearest_sem] < 0.3:
+        if elem_distances[nearest_sem] < self.p:
             return nearest_sem
         else:
             return 'Unknown'
