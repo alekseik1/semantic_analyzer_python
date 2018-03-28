@@ -70,7 +70,8 @@ class SemanticsClassifier:
         self.verbose = be_verbose
         self.p = p
 
-    def _normalize_semantics(self, sem):
+    @staticmethod
+    def _normalize_semantics(sem):
         return ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
 
     def train(self, data):
@@ -87,7 +88,7 @@ class SemanticsClassifier:
         self.sem = data
         self.n_sem = Parallel(n_jobs=self.n_jobs)(delayed(self._normalize_semantics)(sem) for sem in data)
         if self.verbose:
-            print("Sematics classifier is trained!")
+            print("Semantics classifier is trained!")
 
     # ПЕРЕДАВАТЬ ЕМУ ТОЛЬКО НОРМАЛИЗОВАННУЮ СЕМАНТИКУ!!!
     def _check(self, element, vec_req, i, n_sem, j):
