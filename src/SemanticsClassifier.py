@@ -94,13 +94,11 @@ class SemanticsClassifier:
         if self.verbose:
             print("Semantics classifier is trained!")
 
-    def _check(self, element, vec_req, i, sem, j):
-        return self.check_sem(element, sem, vec_req[i], self.vec_sem[j])
-
     def _make_predictions_multithread(self, i, element, vec_req):
         element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
         # Бегаем по сематич. ядру
-        elem_distances = dict(zip(self.sem, [self._check(element, vec_req, i, sem, j) for j, sem in enumerate(self.sem)]))
+        elem_distances = dict(
+            zip(self.sem, [self.check_sem(element, sem, vec_req[i], self.vec_sem[j]) for j, sem in enumerate(self.sem)]))
         nearest_sem = min(elem_distances, key=elem_distances.get)
         if elem_distances[nearest_sem] < self.p:
             return nearest_sem
