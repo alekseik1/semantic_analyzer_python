@@ -54,6 +54,9 @@ class SemanticsClassifier:
         """
         Classifier for requests <--> semantic kernel
         @param a: Weight for cosine distance
+        @param tokenizer: Pass tokenizer existing tokenizer for words, if exists. It would speed up computation
+        @param n_jobs: Number of threads to use in execution
+        @param be_verbose: Write more output info about progress
         """
         self.a = a
         self.b = 1-a
@@ -73,6 +76,7 @@ class SemanticsClassifier:
         @param data: data to train at
         @return: nothing
         """
+        # Check whether the tokenizer is already trained
         if len(self.tokenizer.uniq_words) == 0:
             self.vec_sem = self.tokenizer.fit_transform(data, data)
         else:
