@@ -29,7 +29,7 @@ class SemanticsClassifier:
                 minus_words.append(part.split(' ')[0])
             for bad_word in minus_words:
                 if bad_word in req.split(' '):
-                    return 1
+                    return 10
         if '+' in sem:
             plus_words = []
             for i, part in enumerate(sem.split('+')):
@@ -38,12 +38,12 @@ class SemanticsClassifier:
                 plus_words.append(part.split(' ')[0])
             for required_word in plus_words:
                 if required_word not in req.split(' '):
-                    return 1
+                    return 10
         if '"' in sem:
             if np.count_nonzero(vec_req - vec_sem) == 0:
                 return 0
             else:
-                return 1
+                return 10
         elif '[' in sem:
             # TODO: здесь пока будет заглушка (`[]` -- это отстой)
             return 1
