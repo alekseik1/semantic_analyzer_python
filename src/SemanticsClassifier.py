@@ -23,14 +23,18 @@ class SemanticsClassifier:
         """
         if '-' in sem:
             minus_words = []
-            for part in sem.split('-'):
+            for i, part in enumerate(sem.split('-')):
+                if i == 0:
+                    continue
                 minus_words.append(part.split(' ')[0])
             for bad_word in minus_words:
                 if bad_word in req.split(' '):
                     return 1
         if '+' in sem:
             plus_words = []
-            for part in sem.split('+'):
+            for i, part in enumerate(sem.split('+')):
+                if i == 0:
+                    continue
                 plus_words.append(part.split(' ')[0])
             for required_word in plus_words:
                 if required_word not in req.split(' '):
