@@ -40,7 +40,8 @@ class SemanticsClassifier:
                 if required_word not in req.split(' '):
                     return 10
         if '"' in sem:
-            if np.count_nonzero(vec_req - vec_sem) == 0:
+            sem = self._normalize_sentence(sem)
+            if sem == req:
                 return 0
             else:
                 return 10
@@ -75,7 +76,7 @@ class SemanticsClassifier:
         self.p = p
 
     @staticmethod
-    def _normalize_semantics(sem):
+    def _normalize_sentence(sem):
         return ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in sem.split(' ')])
 
     def train(self, data):
@@ -91,13 +92,13 @@ class SemanticsClassifier:
             self.vec_sem = self.tokenizer.transform(data)
         self.sem = data
         # Сохраним в поле класса еще и нормализованную семантику
-        self.n_sem = Parallel(n_jobs=self.n_jobs)(delayed(self._normalize_semantics)(sem) for sem in data)
+        self.n_sem = Parallel(n_jobs=self.n_jobs)(delayed(self._normalize_sentence)(sem) for sem in data)
         if self.verbose:
             print("Semantics classifier is trained!")
 
     def _make_predictions_multithread(self, i, element, vec_req):
         # Нормируем слово
-        element = ' '.join([normed_word(re.sub("\W", "", tmp_word).lower()) for tmp_word in element.split(' ')])
+        element = self._normalize_sentence(element)
         # Бегаем по сематич. ядру
         elem_distances = dict(
             zip(self.sem, [self.check_sem(element, sem, vec_req[i], self.vec_sem[j]) for j, sem in enumerate(self.sem)]))
