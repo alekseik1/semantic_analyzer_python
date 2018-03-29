@@ -127,7 +127,6 @@ if __name__ == "__main__":
             beautiful_print("Путь установлен. Возврат в главное меню...")
             print_usage()
         if n == '6':
-            # TODO: Провека на то, что пользователь ввел все файлы!!!
             if df_sem is None or df_search is None:
                 beautiful_print("Не все файлы указаны. Возврат в главное меню...")
                 print_usage()
