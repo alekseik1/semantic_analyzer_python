@@ -86,6 +86,7 @@ if __name__ == "__main__":
     tokenizer = WordsTokenizer()
     model = SemanticsClassifier()
     out_path = '../results/result.csv'
+    df_sem, df_search = None, None
     while True:
         n = input()
         if n not in ['1', '2', '3', '4', '5', '6', '?', 'q']:
@@ -129,6 +130,12 @@ if __name__ == "__main__":
             print_usage()
         if n == '6':
             # TODO: Провека на то, что пользователь ввел все файлы!!!
+            if df_sem is None or df_search is None:
+                print("Не все файлы указаны. Возврат в главное меню...")
+                print_delimeter()
+                print()
+                print_usage()
+                continue
             tokenizer.fit(df_search['search'].values)
             model.train(df_sem['keyword_name'].values)
             predictions = model.predict(df_search['search'].values)
