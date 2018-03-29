@@ -17,7 +17,7 @@ def print_usage():
 
 
 def read_file():
-    print("Введите путь к файлу...")
+    beautiful_print("Введите путь к файлу...")
     s = input()
     try:
         df = pd.read_csv(s)
@@ -28,9 +28,7 @@ def read_file():
             return read_file()
         else:
             return None
-    print('Файл успешно считан! Возврат в главное меню...')
-    print_delimeter()
-    print()
+    beautiful_print('Файл успешно считан! Возврат в главное меню...')
     print_usage()
     return df
 
@@ -40,12 +38,14 @@ def print_delimeter():
 
 
 def read_param_model():
+    print_delimeter()
     print("Введите параметры a, n_jobs, be_verbose, p через пробел. Их описание:")
     print("a -- Вес косинусного расстояние (для Левенштейна будет 1-a)")
     print("n_jobs -- число потоков")
     # FIXME: Сделать обработку be_verbose
     print("be_verbose -- Писать больше информации. Пока не работает: пишет много всегда")
     print("p -- минимальный порог расстояния, ниже которого запрос будет воспринят как 'Unknown'. От 0 до 1")
+    print_delimeter()
     params = input().split()
     try:
         a = float(params[0])
@@ -63,10 +63,12 @@ def read_param_model():
 
 
 def read_param_tokenizer():
+    print_delimeter()
     print("Введите параметры p, n_jobs через пробел. Их описание:")
     print("p -- максимальное нормированное расстояние Левенштейна (степень схожести)"
           " между двумя словами, при котором их считать одним и тем же словом. От 0 до 1")
     print("n_jobs -- число потоков")
+    print_delimeter()
     params = input().split()
     try:
         p = float(params[0])
@@ -79,6 +81,12 @@ def read_param_tokenizer():
         else:
             return None
     return p, n_jobs
+
+
+def beautiful_print(s):
+    print_delimeter()
+    print(s)
+    print_delimeter()
 
 
 if __name__ == "__main__":
@@ -95,45 +103,33 @@ if __name__ == "__main__":
         if n == '1':
             df_sem = read_file()
             if df_sem is None:
-                print("Файл не был считан. Выберите другую опцию")
-                print_delimeter()
-                print()
+                beautiful_print("Файл не был считан. Выберите другую опцию")
                 print_usage()
         if n == '2':
             df_search = read_file()
             if df_search is None:
-                print("Файл не был считан. Выберите другую опцию")
-                print_delimeter()
-                print()
+                beautiful_print("Файл не был считан. Выберите другую опцию")
                 print_usage()
         if n == '3':
             par1 = read_param_model()
             model = SemanticsClassifier(a=par1[0], n_jobs=par1[1], be_verbose=par1[2], p=par1[3], tokenizer=tokenizer)
-            print("Параметры модели установлены. Возврат в главное меню...")
-            print_delimeter()
-            print()
+            beautiful_print("Параметры модели установлены. Возврат в главное меню...")
             print_usage()
         if n == '4':
             par2 = read_param_tokenizer()
             tokenizer = WordsTokenizer(p=par2[0], n_jobs=par2[1])
             model = SemanticsClassifier(a=par1[0], n_jobs=par1[1], be_verbose=par1[2], p=par1[3], tokenizer=tokenizer)
-            print("Параметры установлены. Возврат в главное меню...")
-            print_delimeter()
-            print()
+            beautiful_print("Параметры модели установлены. Возврат в главное меню...")
             print_usage()
         if n == '5':
             print("Введите путь файла для вывода...")
             out_path = input()
-            print("Путь установлен. Возврат в главное меню...")
-            print_delimeter()
-            print()
+            beautiful_print("Путь установлен. Возврат в главное меню...")
             print_usage()
         if n == '6':
             # TODO: Провека на то, что пользователь ввел все файлы!!!
             if df_sem is None or df_search is None:
-                print("Не все файлы указаны. Возврат в главное меню...")
-                print_delimeter()
-                print()
+                beautiful_print("Не все файлы указаны. Возврат в главное меню...")
                 print_usage()
                 continue
             tokenizer.fit(df_search['search'].values)
@@ -150,5 +146,5 @@ if __name__ == "__main__":
         if n == '?':
             print_usage()
         if n == 'q':
-            print("Благодарим за использование наших услуг!")
+            beautiful_print("Благодарим за использование наших услуг!")
             break
