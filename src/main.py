@@ -41,9 +41,11 @@ def print_delimeter():
 
 def read_param_model():
     print("Введите параметры a, n_jobs, be_verbose, p через пробел. Их описание:")
-    # TODO: Сделать описание
     print("a -- Вес косинусного расстояние (для Левенштейна будет 1-a)")
-    print("")
+    print("n_jobs -- число потоков")
+    # FIXME: Сделать обработку be_verbose
+    print("be_verbose -- Писать больше информации. Пока не работает: пишет много всегда")
+    print("p -- минимальный порог расстояния, ниже которого запрос будет воспринят как 'Unknown'. От 0 до 1")
     params = input().split()
     try:
         a = float(params[0])
@@ -62,8 +64,9 @@ def read_param_model():
 
 def read_param_tokenizer():
     print("Введите параметры p, n_jobs через пробел. Их описание:")
-    # TODO: Сделать описание
-    print("")
+    print("p -- максимальное нормированное расстояние Левенштейна (степень схожести)"
+          " между двумя словами, при котором их считать одним и тем же словом. От 0 до 1")
+    print("n_jobs -- число потоков")
     params = input().split()
     try:
         p = float(params[0])
@@ -125,6 +128,7 @@ if __name__ == "__main__":
             print()
             print_usage()
         if n == '6':
+            # TODO: Провека на то, что пользователь ввел все файлы!!!
             tokenizer.fit(df_search['search'].values)
             model.train(df_sem['keyword_name'].values)
             predictions = model.predict(df_search['search'].values)
